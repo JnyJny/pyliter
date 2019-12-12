@@ -1,7 +1,7 @@
-pylite - Python syntax highlighting
+pyliter - Python syntax highlighting
 ===================================
 
-``pylite`` is a Python 3 command-line tool that generates ANSI
+``pyliter`` is a Python 3 command-line tool that generates ANSI
 escape code annotated files from python source. 
 
 
@@ -15,12 +15,12 @@ Install
 
 ::
 
-   $ pip install pylite
+   $ pip install pyliter
 
 
 ::
 
-   $ pip install git+https://github.com/JnyJny/pylite
+   $ pip install git+https://github.com/JnyJny/pyliter
 
 
 Usage
@@ -28,8 +28,8 @@ Usage
 
 ::
 
-   $ pylite --help
-   Usage: pylite [OPTIONS] [INPUT_FILE] [OUTPUT_FILE]
+   $ pyliter --help
+   Usage: pyliter [OPTIONS] [INPUT_FILE] [OUTPUT_FILE]
 
      Python syntax highlighting
    
