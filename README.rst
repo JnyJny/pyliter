@@ -43,4 +43,10 @@ Usage
      -S, --dump-style
      --help                 Show this message and exit.
 
+
+Example
+-------
+
+.. image:: https://github.com/JnyJny/pyliter/blob/master/screenshot.png
+
  
