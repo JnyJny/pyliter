@@ -1,0 +1,6 @@
+.DS_Store
+*.egg-info
+tst.*
+.secrets.toml
+__pycache__
+dist/*
