@@ -8,18 +8,25 @@ STRING:
   fg: red
 NAME:
   fg: black
-BUILTINS:
+BUILTIN:
   fg: green
 NUMBER:
   fg: black
-self:
+  underline: true
+SELF:
   fg: magenta
 LVAL:
+  fg: red
+  bold: true
+FNAME:
   fg: blue
   bold: true
-DEFINITION:
-  fg: blue
+CNAME:
+  fg: yellow
   bold: true
+INAME:
+  fg: blue
+  dim: true
 COMMENT:
   fg: red
   bold: true
@@ -27,3 +34,4 @@ DOCSTRING:
   fg: red
 PRIVATE:
   fg: black
+  dim: true
