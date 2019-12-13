@@ -47,14 +47,12 @@ class StyledToken:
         """
 
         style = style or {}
-        prev = None
-        tokens = []
-        for token_info in original_tokenize(readline):
-            prev = cls(*list(token_info._asdict().values()), prev=prev)
-            tokens.append(prev)
-            prev._resolve_upstream()
 
-        for token in tokens:
+        tokens = [None]
+        for token_info in original_tokenize(readline):
+            tokens.append(cls(*list(token_info._asdict().values()), prev=tokens[-1]))
+
+        for token in tokens[1:]:
             token.apply_style(style)
             yield token
 
@@ -73,6 +71,8 @@ class StyledToken:
         self.end = end
         self.line = line
         self.prev = prev
+        if self.exact_type == TOKEN.EQUAL:
+            self._resolve_upstream()
 
     @property
     def exact_type(self) -> int:
@@ -83,22 +83,30 @@ class StyledToken:
         self._exact_type = self.type
         if self.type == TOKEN.OP:
             try:
-                self._exact_type = EXACT_TOKEN_TYPES[self.string]
+                self._exact_type = EXACT_TOKEN_TYPES[self.raw_string]
+                return self._exact_type
             except KeyError:
                 pass
+
         if keyword.iskeyword(self.raw_string):
             self._exact_type = KEYWORD
+
         if self.raw_string in _BUILTINS:
             self._exact_type = BUILTIN
+
         if self.raw_string.startswith(('"""', "'''")):
             self._exact_type = DOCSTRING
+
         if self.raw_string.startswith("_"):
             self._exact_type = HIDDEN
+
         try:
             if self.prev.raw_string == "def":
                 self._exact_type = FNAME
+
             if self.prev.raw_string == "class":
                 self._exact_type = CNAME
+
             if self.prev.raw_string == "import":
                 self._exact_type = INAME
         except AttributeError:
@@ -140,19 +148,26 @@ class StyledToken:
 
     def _resolve_upstream(self):
 
-        if self.exact_type == TOKEN.EQUAL:
-            pt = self.prev
-            while pt:
-                t, pt = pt, pt.prev
-                if t.exact_type == TOKEN.DOT:
-                    t.exact_type = LVAL
-                    continue
-                if t.type == TOKEN.NAME:
-                    t.exact_type = LVAL
-                    continue
-                if t.type == TOKEN.OP:
-                    continue
+        lvals = []
+
+        pt = self.prev
+        while pt:
+            cur_tok, pt = pt, pt.prev
+
+            if cur_tok.exact_type in [TOKEN.COLON, TOKEN.COMMA]:
+                lvals = []
                 break
+
+            if cur_tok.exact_type in [TOKEN.DOT] or cur_tok.type == TOKEN.OP:
+                continue
+
+            if cur_tok.type == TOKEN.NAME:
+                lvals.append(cur_tok)
+                continue
+            break
+
+        for lval in lvals:
+            lval.exact_type = LVAL
 
     @property
     def name(self):
@@ -203,13 +218,8 @@ class StyledToken:
 class ANSIStyledToken(StyledToken):
     @property
     def string(self):
-        try:
-            return self._string
-        except AttributeError:
-            pass
 
         if self.type not in [TOKEN.OP, TOKEN.NAME, TOKEN.STRING, TOKEN.COMMENT]:
-            self._string = self.raw_string
-        else:
-            self._string = click.style(self.raw_string, **self.style)
-        return self._string
+            return self.raw_string
+
+        return click.style(self.raw_string, **self.style)
