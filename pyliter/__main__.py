@@ -7,7 +7,9 @@ import yaml
 
 from . import VERSION
 
-from .scrutinizer import Scrutinizer
+from .token import TokenizedFile
+
+# from .scrutinizer import Scrutinizer
 
 from importlib.resources import read_text
 from . import resources
@@ -21,8 +23,9 @@ _DEFAULT_STYLE = "default_style.yaml"
 @click.argument("output-file", type=click.File(mode="w"), default=sys.stdout)
 @click.option("-s", "--style-file", type=click.Path(exists=True), default=None)
 @click.option("-S", "--dump-style", is_flag=True, default=False)
+@click.option("-d", "--debug", is_flag=True, hidden=True, default=False)
 @click.version_option(VERSION)
-def pyliter_cli(input_file, output_file, style_file, dump_style):
+def pyliter_cli(input_file, output_file, style_file, dump_style, debug):
     """Python syntax highlighting
 
     Performs Python syntax highlighting on code found in INPUT_FILE
@@ -45,6 +48,10 @@ def pyliter_cli(input_file, output_file, style_file, dump_style):
     if input_file == sys.stdin:
         input_file = io.BytesIO(sys.stdin.buffer.read())
 
-    scrutinizer = Scrutinizer(input_file, style)
+    styled_file = TokenizedFile(input_file, style)
 
-    output_file.write(str(scrutinizer))
+    if debug:
+        for token in styled_file.tokens:
+            print(repr(token))
+
+    output_file.write(str(styled_file))
