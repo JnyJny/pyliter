@@ -10,7 +10,6 @@ from tokenize import tokenize as original_tokenize
 from tokenize import untokenize as original_untokenize
 from tokenize import EXACT_TOKEN_TYPES, tok_name
 
-
 _BUILTINS = dir(builtins)
 
 
@@ -37,6 +36,39 @@ tok_name[HIDDEN] = "HIDDEN"
 tok_name[SELF] = "SELF"
 
 
+class TokenizedFile:
+    def __init__(self, path: str, style: dict = None, token_factory=None):
+        self.path = path
+        self.style = style or {}
+        self.token_factory = token_factory or ANSIStyledToken
+
+    def __str__(self) -> str:
+        return self.token_factory.untokenize(self.tokens)
+
+    @property
+    def file(self):
+        try:
+            return self._file
+        except AttributeError:
+            pass
+        try:
+            self._file = open(self.path, "rb")
+        except TypeError:
+            self._file = self.path
+
+        return self._file
+
+    @property
+    def tokens(self) -> list:
+        try:
+            return self._tokens
+        except AttributeError:
+            pass
+
+        self._tokens = list(self.token_factory.tokenize(self.file.readline, self.style))
+        return self._tokens
+
+
 class StyledToken:
     """tokenize.TokenInfo compatible object with extended attributes.
     """
@@ -48,9 +80,15 @@ class StyledToken:
 
         style = style or {}
 
+        # First pass through the tokens sets exact_type for
+        # all the tokens based on their context.
+
         tokens = [None]
         for token_info in original_tokenize(readline):
             tokens.append(cls(*list(token_info._asdict().values()), prev=tokens[-1]))
+
+        # Second pass thru the tokens applies the style to each token and
+        # yields the styled token.
 
         for token in tokens[1:]:
             token.apply_style(style)
@@ -71,8 +109,7 @@ class StyledToken:
         self.end = end
         self.line = line
         self.prev = prev
-        if self.exact_type == TOKEN.EQUAL:
-            self._resolve_upstream()
+        self._resolve_upstream()
 
     @property
     def exact_type(self) -> int:
@@ -132,13 +169,13 @@ class StyledToken:
         self._string = new_string
 
     def __repr__(self) -> str:
-        msg = "type={}[{:2d}], et={:2d}, name='{}', string='{}', prev={}, style={}"
+        msg = "type={}[{:2d}], et={}[{:2d}], string='{}', prev={}, style={}"
         return msg.format(
             tok_name[self.type],
             self.type,
-            self.exact_type,
             self.name,
-            self.string if "\n" not in self.string else "...",
+            self.exact_type,
+            self.raw_string if "\n" not in self.raw_string else "...",
             self.prev.name if self.prev else "None",
             self.style,
         )
@@ -147,6 +184,15 @@ class StyledToken:
         return self.string
 
     def _resolve_upstream(self):
+        """Starting at the current token, back track through previous
+        tokens and build a list of lvals (left hand side of assignment
+        statement). If we spot a comma or a colon upstream, we're probably
+        in an argument default assignment clause so abort the lval search.
+        If we collect some set of NAME tokens interspersed with other operator
+        """
+
+        if self.exact_type != TOKEN.EQUAL:
+            return
 
         lvals = []
 
@@ -154,16 +200,16 @@ class StyledToken:
         while pt:
             cur_tok, pt = pt, pt.prev
 
-            if cur_tok.exact_type in [TOKEN.COLON, TOKEN.COMMA]:
-                lvals = []
-                break
-
-            if cur_tok.exact_type in [TOKEN.DOT] or cur_tok.type == TOKEN.OP:
-                continue
-
             if cur_tok.type == TOKEN.NAME:
                 lvals.append(cur_tok)
                 continue
+
+            if cur_tok.exact_type in [TOKEN.LSQB, TOKEN.RSQB, TOKEN.DOT]:
+                continue
+
+            if cur_tok.exact_type in [TOKEN.COLON, TOKEN.COMMA]:
+                lvals = []
+
             break
 
         for lval in lvals:
