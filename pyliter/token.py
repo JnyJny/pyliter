@@ -43,7 +43,7 @@ class TokenizedFile:
         self.token_factory = token_factory or ANSIStyledToken
 
     def __str__(self) -> str:
-        return self.token_factory.untokenize(self.tokens)
+        return self.token_factory.untokenize(self.tokens, self.style)
 
     @property
     def file(self):
@@ -65,7 +65,7 @@ class TokenizedFile:
         except AttributeError:
             pass
 
-        self._tokens = list(self.token_factory.tokenize(self.file.readline, self.style))
+        self._tokens = list(self.token_factory.tokenize(self.file.readline))
         return self._tokens
 
 
@@ -74,30 +74,23 @@ class StyledToken:
     """
 
     @classmethod
-    def tokenize(cls, readline, style: dict = None) -> list:
+    def tokenize(cls, readline) -> list:
+        """
+        """
+        prev = None
+        for token_info in original_tokenize(readline):
+            prev = cls(*list(token_info._asdict().values()), prev=prev)
+            yield prev
+
+    @staticmethod
+    def untokenize(tokens, style: dict = None) -> str:
         """
         """
 
         style = style or {}
-
-        # First pass through the tokens sets exact_type for
-        # all the tokens based on their context.
-
-        tokens = [None]
-        for token_info in original_tokenize(readline):
-            tokens.append(cls(*list(token_info._asdict().values()), prev=tokens[-1]))
-
-        # Second pass thru the tokens applies the style to each token and
-        # yields the styled token.
-
-        for token in tokens[1:]:
+        for token in tokens:
             token.apply_style(style)
-            yield token
 
-    @staticmethod
-    def untokenize(tokens) -> str:
-        """
-        """
         return original_untokenize(tokens).decode()
 
     def __init__(
