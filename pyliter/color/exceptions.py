@@ -1,0 +1,6 @@
+"""
+"""
+
+
+class ColorNameNotFound(Exception):
+    pass
