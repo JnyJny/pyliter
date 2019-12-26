@@ -6,6 +6,7 @@ import sys
 import yaml
 
 from . import VERSION
+from .app import OnscreenRender
 
 from .token import TokenizedFile
 
@@ -54,4 +55,6 @@ def pyliter_cli(input_file, output_file, style_file, dump_style, debug):
         for token in styled_file.tokens:
             print(repr(token))
 
-    output_file.write(str(styled_file))
+    # output_file.write(str(styled_file))
+
+    window = OnscreenRender(str(styled_file), styled_file.tokens)
