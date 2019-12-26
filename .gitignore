@@ -4,3 +4,5 @@ tst.*
 .secrets.toml
 __pycache__
 dist/*
+.coverage
+htmlcov/*
