@@ -42,5 +42,11 @@ publish:
 	@poetry build
 	@poetry publish
 
+release: patch push publish
+
+major_release: major push publish
+
+minor_release: minor push publish
+
 clean:
-	@/bin/rm -rf report?* report.???*
+	@/bin/rm -rf output.png
