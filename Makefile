@@ -38,5 +38,9 @@ update:
 push:
 	@git push --tags origin master
 
+publish:
+	@poetry build
+	@poetry publish
+
 clean:
 	@/bin/rm -rf report?* report.???*
