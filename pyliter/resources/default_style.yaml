@@ -12,27 +12,23 @@ KEYWORD:
 STRING:
   color: pink
 NAME:
-  color: yellow
+  color: white
 BUILTIN:
   color: green
 NUMBER:
   color: red
 SELF:
-  color: red
-  bold: true
+  color: orange
 LVAL:
   color: red
-  bold: true
 FNAME:
   color: blue
-
 CNAME:
-  color: red
+  color: chocolate
 INAME:
   color: blue
 COMMENT:
   color: red
-  bold: true
 DOCSTRING:
   color: red
 PRIVATE:
