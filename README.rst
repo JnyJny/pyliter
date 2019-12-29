@@ -1,14 +1,17 @@
 pyliter - Python syntax highlighting
-===================================
+====================================
 
-``pyliter`` is a Python 3 command-line tool that generates ANSI
-escape code annotated files from python source. 
+``pyliter`` is a Python 3 command-line tool that generates PNG files
+from python source. 
 
 
 Features
 --------
 
 - syntax highlighting
+- PNG files
+- preview mode
+- OpenGL rendering using pyglet
 
 Install
 -------
@@ -29,19 +32,25 @@ Usage
 ::
 
    $ pyliter --help
-   Usage: pyliter [OPTIONS] [INPUT_FILE] [OUTPUT_FILE]
 
+   Usage: pyliter [OPTIONS] [INPUT_FILE] [OUTPUT_FILE]
+   
      Python syntax highlighting
    
      Performs Python syntax highlighting on code found in INPUT_FILE and writes
-     ANSI escape code annotated source to OUTPUT_FILE. The display attributes
-     of various code elements can be styled by supplying a YAML file. Use the
-     --dump-style option to view the default style.
+     color annotated text in PNG format to OUTPUT_FILE.
+   
+     Display attributes of various code elements can be styled by supplying a
+     YAML file
    
    Options:
-     -s, --style-file PATH
-     -S, --dump-style
-     --help                 Show this message and exit.
+     -l, --start-line INTEGER  line to begin displaying
+     -n, --line-count INTEGER  number of lines to display
+     -p, --preview
+     -s, --style-name TEXT
+     --list-styles
+     --version                 Show the version and exit.
+     --help                    Show this message and exit.
 
 
 Example
