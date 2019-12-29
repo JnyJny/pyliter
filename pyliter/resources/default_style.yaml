@@ -1,37 +1,39 @@
-# see documentation for click.style 
+# see documentation for click.style
+DEFAULT:
+  font_name: Source Code Pro
+  font_size: 18
+  background_color: black
+  color: white
+  line_numbers: true
 OP:
-  fg: green
-  bold: true
+  color: purple
 KEYWORD:
-  fg: magenta
+  color: magenta
 STRING:
-  fg: red
+  color: pink
 NAME:
-  fg: black
+  color: yellow
 BUILTIN:
-  fg: green
+  color: green
 NUMBER:
-  fg: black
-  underline: true
+  color: red
 SELF:
-  fg: magenta
+  color: red
+  bold: true
 LVAL:
-  fg: red
+  color: red
   bold: true
 FNAME:
-  fg: blue
-  bold: true
+  color: blue
+
 CNAME:
-  fg: yellow
-  bold: true
+  color: red
 INAME:
-  fg: blue
-  dim: true
+  color: blue
 COMMENT:
-  fg: red
+  color: red
   bold: true
 DOCSTRING:
-  fg: red
+  color: red
 PRIVATE:
-  fg: black
-  dim: true
+  color: purple

@@ -6,9 +6,9 @@ import token as TOKEN
 import builtins
 import keyword
 
-from tokenize import tokenize as original_tokenize
-from tokenize import untokenize as original_untokenize
-from tokenize import EXACT_TOKEN_TYPES, tok_name
+import tokenize
+from dataclasses import dataclass, field
+from pprint import pformat
 
 _BUILTINS = dir(builtins)
 
@@ -24,241 +24,135 @@ LVAL = 1108
 HIDDEN = 1109
 SELF = 1110
 
-tok_name[KEYWORD] = "KEYWORD"
-tok_name[BUILTIN] = "BUILTIN"
-tok_name[DEFINITIONS] = "DEFINITIONS"
-tok_name[DOCSTRING] = "DOCSTRING"
-tok_name[FNAME] = "FNAME"
-tok_name[CNAME] = "CNAME"
-tok_name[INAME] = "INAME"
-tok_name[LVAL] = "LVAL"
-tok_name[HIDDEN] = "HIDDEN"
-tok_name[SELF] = "SELF"
 
-
-class TokenizedFile:
-    def __init__(self, path: str, style: dict = None, token_factory=None):
-        self.path = path
-        self.style = style or {}
-        self.token_factory = token_factory or ANSIStyledToken
-
-    def __str__(self) -> str:
-        return self.token_factory.untokenize(self.tokens, self.style)
-
-    @property
-    def file(self):
-        try:
-            return self._file
-        except AttributeError:
-            pass
-        try:
-            self._file = open(self.path, "rb")
-        except TypeError:
-            self._file = self.path
-
-        return self._file
-
-    @property
-    def tokens(self) -> list:
-        try:
-            return self._tokens
-        except AttributeError:
-            pass
-
-        self._tokens = list(self.token_factory.tokenize(self.file.readline))
-        return self._tokens
-
-
-class StyledToken:
-    """tokenize.TokenInfo compatible object with extended attributes.
-    """
+@dataclass
+class ExtendedToken:
+    type: int
+    string: str
+    start: tuple
+    end: tuple
+    line: str
+    exact_type: int = 0
+    category: str = field(default="", init=False, repr=True)
+    attributes: dict = field(default_factory=dict, init=False, repr=False)
 
     @classmethod
-    def tokenize(cls, readline) -> list:
-        """
-        """
-        prev = None
-        for token_info in original_tokenize(readline):
-            prev = cls(*list(token_info._asdict().values()), prev=prev)
-            yield prev
-
-    @staticmethod
-    def untokenize(tokens, style: dict = None) -> str:
-        """
-        """
-
-        style = style or {}
-        for token in tokens:
-            token.apply_style(style)
-
-        return original_untokenize(tokens).decode()
-
-    def __init__(
-        self, type: int, string: str, start: tuple, end: tuple, line: str, prev=None
-    ):
-        self.type = type
-        self.raw_string = string
-        self.start = start
-        self.end = end
-        self.line = line
-        self.prev = prev
-        self._resolve_upstream()
-
-    @property
-    def exact_type(self) -> int:
-        try:
-            return self._exact_type
-        except AttributeError:
-            pass
-        self._exact_type = self.type
-        if self.type == TOKEN.OP:
-            try:
-                self._exact_type = EXACT_TOKEN_TYPES[self.raw_string]
-                return self._exact_type
-            except KeyError:
-                pass
-
-        if keyword.iskeyword(self.raw_string):
-            self._exact_type = KEYWORD
-
-        if self.raw_string in _BUILTINS:
-            self._exact_type = BUILTIN
-
-        if self.raw_string.startswith(('"""', "'''")):
-            self._exact_type = DOCSTRING
-
-        if self.raw_string.startswith("_"):
-            self._exact_type = HIDDEN
+    def from_file(
+        cls, input_file, start_line: int, line_count: int, classifier=None
+    ) -> tuple:
 
         try:
-            if self.prev.raw_string == "def":
-                self._exact_type = FNAME
+            classifier = classifier()
+        except TypeError:
+            classifier = TokenClassifier()
 
-            if self.prev.raw_string == "class":
-                self._exact_type = CNAME
+        tokens = []
 
-            if self.prev.raw_string == "import":
-                self._exact_type = INAME
-        except AttributeError:
-            pass
+        for t in tokenize.tokenize(input_file.readline):
+            tokens.append(cls(*t._asdict().values(), t.exact_type))
+            classifier(tokens[-1], tokens[:-1])
 
-        return self._exact_type
+        text = tokenize.untokenize(tokens).decode("utf-8")
 
-    @exact_type.setter
-    def exact_type(self, new_type: int) -> None:
-        self._exact_type = new_type
+        if line_count == -1:
+            end_line = line_count
+        else:
+            end_line = start_line + line_count
 
-    @property
-    def string(self) -> str:
-        try:
-            return self._string
-        except AttributeError:
-            pass
-        self._string = self.raw_string
-        return self._string
+        text = "\n".join(text.splitlines()[start_line:end_line])
 
-    @string.setter
-    def string(self, new_string: str) -> None:
-        self._string = new_string
+        # TokenInfo.start is a tuple of (line number, offset), line number
+        # starts at one instead of zero so subtract one to avoid a one-off bug.
+        tokens = [t for t in tokens if start_line <= (t.start[0] - 1) < end_line]
 
-    def __repr__(self) -> str:
-        msg = "type={}[{:2d}], et={}[{:2d}], string='{}', prev={}, style={}"
-        return msg.format(
-            tok_name[self.type],
-            self.type,
-            self.name,
-            self.exact_type,
-            self.raw_string if "\n" not in self.raw_string else "...",
-            self.prev.name if self.prev else "None",
-            self.style,
-        )
-
-    def __str__(self) -> str:
-        return self.string
-
-    def _resolve_upstream(self):
-        """Starting at the current token, back track through previous
-        tokens and build a list of lvals (left hand side of assignment
-        statement). If we spot a comma or a colon upstream, we're probably
-        in an argument default assignment clause so abort the lval search.
-        If we collect some set of NAME tokens interspersed with other operator
-        """
-
-        if self.exact_type != TOKEN.EQUAL:
-            return
-
-        lvals = []
-
-        pt = self.prev
-        while pt:
-            cur_tok, pt = pt, pt.prev
-
-            if cur_tok.type == TOKEN.NAME:
-                lvals.append(cur_tok)
-                continue
-
-            if cur_tok.exact_type in [TOKEN.LSQB, TOKEN.RSQB, TOKEN.DOT]:
-                continue
-
-            if cur_tok.exact_type in [TOKEN.COLON, TOKEN.COMMA]:
-                lvals = []
-
-            break
-
-        for lval in lvals:
-            lval.exact_type = LVAL
-
-    @property
-    def name(self):
-        try:
-            return self._name
-        except AttributeError:
-            pass
-
-        try:
-            self._name = tok_name[self.exact_type]
-        except KeyError as error:
-            print(f"missing exact type name {self.exact_type}")
-            raise
-        return self._name
-
-    @property
-    def style(self):
-        try:
-            return self._style
-        except AttributeError:
-            pass
-        self._style = {}
-        return self._style
-
-    @property
-    def prev(self):
-        try:
-            return self._prev
-        except AttributeError:
-            pass
-        self._prev = None
-        return self._prev
-
-    @prev.setter
-    def prev(self, previous_token):
-        self._prev = previous_token
-
-    def apply_style(self, style):
-        self.style.update(style.get(self.name, {}))
+        return tokens, text
 
     def __len__(self):
-        return 5
+        return 4
 
     def __iter__(self):
         return iter([self.type, self.string, self.start, self.end, self.line])
 
+    def __str__(self):
+        return f"{self!r}\nA:\n{pformat(self.attributes)}"
 
-class ANSIStyledToken(StyledToken):
+
+class TokenClassifier:
     @property
-    def string(self):
+    def builtins(self):
+        try:
+            return self._builtins
+        except AttributeError:
+            pass
+        self._builtins = dir(builtins)
+        return self._builtins
 
-        if self.type not in [TOKEN.OP, TOKEN.NAME, TOKEN.STRING, TOKEN.COMMENT]:
-            return self.raw_string
+    @property
+    def categories(self):
+        try:
+            return self._categories
+        except AttributeError:
+            pass
 
-        return click.style(self.raw_string, **self.style)
+        self._categories = {}
+        self._categories.update(tokenize.tok_name)
+        self._categories[KEYWORD] = "KEYWORD"
+        self._categories[BUILTIN] = "BUILTIN"
+        self._categories[DEFINITIONS] = "DEFINITIONS"
+        self._categories[DOCSTRING] = "DOCSTRING"
+        self._categories[FNAME] = "FNAME"
+        self._categories[CNAME] = "CNAME"
+        self._categories[INAME] = "INAME"
+        self._categories[LVAL] = "LVAL"
+        self._categories[HIDDEN] = "HIDDEN"
+        self._categories[SELF] = "SELF"
+
+        return self._categories
+
+    def __call__(self, token, prev_tokens):
+        self.classify(token, prev_tokens)
+
+    def classify(self, token, prev_tokens):
+
+        while True:
+            if keyword.iskeyword(token.string):
+                token.exact_type = KEYWORD
+                break
+
+            if token.string in self.builtins:
+                token.exact_type = BUILTIN
+                break
+
+            if token.string.startswith(('"""', "'''")):
+                token.exact_type = DOCSTRING
+                break
+
+            if token.string.startswith("_"):
+                token.exact_type = HIDDEN
+                break
+
+            if token.string == "self":
+                token.exact_type = SELF
+                break
+
+            try:
+                if prev_tokens[-1].string == "def":
+                    token.exact_type = FNAME
+                    break
+
+                if prev_tokens[-1].string == "class":
+                    token.exact_type = CNAME
+                    break
+
+                if prev_tokens[-1].string == "import":
+                    token.exact_type = INAME
+                    break
+            except IndexError:
+                pass
+            break
+
+        # need to backtrack for LVAL classification
+        if token.type != TOKEN.OP:
+            token.category = self.categories[token.exact_type]
+        else:
+            token.category = self.categories[token.type]

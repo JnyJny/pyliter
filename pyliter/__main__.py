@@ -1,60 +1,66 @@
 """ python syntax highlighting tool
+
 """
 
 import click
 import sys
 import yaml
 
-from . import VERSION
-from .app import OnscreenRender
-
-from .token import TokenizedFile
-
-# from .scrutinizer import Scrutinizer
-
 from importlib.resources import read_text
+
+from . import VERSION
+from .render import OnscreenRender
+from .color import Color
+
 from . import resources
 import io
 
-_DEFAULT_STYLE = "default_style.yaml"
+# Fun comment here
+#
 
 
 @click.command()
 @click.argument("input-file", type=click.File(mode="rb"), default=sys.stdin)
 @click.argument("output-file", type=click.File(mode="w"), default=sys.stdout)
-@click.option("-s", "--style-file", type=click.Path(exists=True), default=None)
-@click.option("-S", "--dump-style", is_flag=True, default=False)
+@click.option("-l", "--start-line", default=0, help="line to begin displaying")
+@click.option("-n", "--line-count", default=10, help="number of lines to display")
+@click.option("-p", "--preview", is_flag=True, default=True)
+@click.option("-s", "--style-name", type=click.STRING, default="default")
+@click.option("--list-styles", is_flag=True, default=False)
 @click.option("-d", "--debug", is_flag=True, hidden=True, default=False)
 @click.version_option(VERSION)
-def pyliter_cli(input_file, output_file, style_file, dump_style, debug):
+def pyliter_cli(
+    input_file,
+    output_file,
+    start_line,
+    line_count,
+    preview,
+    style_name,
+    list_styles,
+    debug,
+):
     """Python syntax highlighting
 
     Performs Python syntax highlighting on code found in INPUT_FILE
-    and writes ANSI escape code annotated source to OUTPUT_FILE. The
-    display attributes of various code elements can be styled by
-    supplying a YAML file. Use the --dump-style option to view the
-    default syntax highlighting style in YAML format.
+    and writes color annotated text in PNG format to OUTPUT_FILE.
 
+    Display attributes of various code elements can be styled by
+    supplying a YAML file
     """
 
-    if dump_style:
-        print(read_text(resources, _DEFAULT_STYLE))
-        return
+    style = yaml.safe_load(read_text(resources, "default_style.yaml"))
 
-    try:
-        style = yaml.safe_load(open(style_file))
-    except (AttributeError, TypeError):
-        style = yaml.safe_load(read_text(resources, _DEFAULT_STYLE))
+    for category, attributes in style.items():
+        for color_key in ["color", "background_color", "underline"]:
+            try:
+                color_spec = attributes[color_key]
+                attributes[color_key] = Color.from_any(color_spec).rgba
+            except KeyError:
+                pass
 
     if input_file == sys.stdin:
         input_file = io.BytesIO(sys.stdin.buffer.read())
 
-    styled_file = TokenizedFile(input_file, style)
-
-    if debug:
-        for token in styled_file.tokens:
-            print(repr(token))
-
-    # output_file.write(str(styled_file))
-
-    window = OnscreenRender(str(styled_file), styled_file.tokens)
+    if preview:
+        window = OnscreenRender(input_file, start_line, line_count, style)
+        window.run()

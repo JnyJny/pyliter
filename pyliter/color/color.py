@@ -16,6 +16,29 @@ class Color:
     """
 
     @classmethod
+    def from_any(cls, colorspec, tuple_type: str = None):
+
+        try:
+            return cls.from_value(colorspec)
+        except ValueError:
+            pass
+
+        try:
+            return cls.from_name(colorspec)
+        except ColorNameNotFound:
+            pass
+
+        try:
+            return cls.from_hex_string(colorspec)
+        except ValueError:
+            pass
+
+        try:
+            return cls(*colorspec)
+        except Exception:
+            raise TypeError(f"unable to decode colorspec {type(colorspec)}") from None
+
+    @classmethod
     def from_name(cls, name: str, alpha: int = Value8.maximum):
         """Attempts to locate RGB values for the color name given.
 
