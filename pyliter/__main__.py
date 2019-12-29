@@ -21,10 +21,11 @@ import io
 
 @click.command()
 @click.argument("input-file", type=click.File(mode="rb"), default=sys.stdin)
-@click.argument("output-file", type=click.File(mode="w"), default=sys.stdout)
+@click.argument("output-file", type=click.Path(allow_dash=True), default=sys.stdout)
 @click.option("-l", "--start-line", default=0, help="line to begin displaying")
 @click.option("-n", "--line-count", default=10, help="number of lines to display")
-@click.option("-p", "--preview", is_flag=True, default=True)
+@click.option("-p", "--preview", is_flag=True, default=False)
+@click.option("-t", "--transparent", is_flag=True, default=False)
 @click.option("-s", "--style-name", type=click.STRING, default="default")
 @click.option("--list-styles", is_flag=True, default=False)
 @click.option("-d", "--debug", is_flag=True, hidden=True, default=False)
@@ -35,6 +36,7 @@ def pyliter_cli(
     start_line,
     line_count,
     preview,
+    transparent,
     style_name,
     list_styles,
     debug,
@@ -54,13 +56,16 @@ def pyliter_cli(
         for color_key in ["color", "background_color", "underline"]:
             try:
                 color_spec = attributes[color_key]
-                attributes[color_key] = Color.from_any(color_spec).rgba
+                color = Color.from_any(color_spec)
+                if color_key == "background_color" and transparent:
+                    color.alpha.value = 0
+                attributes[color_key] = color.rgba
             except KeyError:
                 pass
 
     if input_file == sys.stdin:
         input_file = io.BytesIO(sys.stdin.buffer.read())
 
-    if preview:
-        window = OnscreenRender(input_file, start_line, line_count, style)
-        window.run()
+    render = OnscreenRender(input_file, start_line, line_count, style, output_file)
+
+    render.run(preview)
