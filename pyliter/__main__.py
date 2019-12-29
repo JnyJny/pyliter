@@ -45,9 +45,6 @@ def pyliter_cli(
 
     Performs Python syntax highlighting on code found in INPUT_FILE
     and writes color annotated text in PNG format to OUTPUT_FILE.
-
-    Display attributes of various code elements can be styled by
-    supplying a YAML file
     """
 
     style = yaml.safe_load(read_text(resources, "default_style.yaml"))

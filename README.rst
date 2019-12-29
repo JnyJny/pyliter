@@ -40,17 +40,16 @@ Usage
      Performs Python syntax highlighting on code found in INPUT_FILE and writes
      color annotated text in PNG format to OUTPUT_FILE.
    
-     Display attributes of various code elements can be styled by supplying a
-     YAML file
-   
    Options:
      -l, --start-line INTEGER  line to begin displaying
      -n, --line-count INTEGER  number of lines to display
      -p, --preview
+     -t, --transparent
      -s, --style-name TEXT
      --list-styles
      --version                 Show the version and exit.
      --help                    Show this message and exit.
+      
 
 
 Example
