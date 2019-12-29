@@ -25,7 +25,10 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
 
         super().__init__(self.raw_text.translate(str.maketrans({"{": "{{", "}": "}}"})))
 
-        self.line_count = len(self.text.splitlines()) + 2
+        self.line_count = len(self.text.splitlines()) + 1
+        # FormattedDocument does some messing about with newlines in the source
+        # text which results in the loss of the terminal newline. This in turn
+        # causes an off-by-one bug when counting the number of lines in the text.
 
         self.set_style(
             start=0, end=len(self.text), attributes=self.style_book["DEFAULT"]
@@ -34,14 +37,19 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
         self._apply_token_styles()
 
         if self.style_book["DEFAULT"].get("line_numbers", False):
-            self._insert_line_numbers()
+            self._insert_line_numbers(start)
 
-    def _insert_line_numbers(self):
+    def _insert_line_numbers(self, start):
         """
         """
         p = 0
-        line_num = 0
-        attributes = {"color": (0xA0, 0xA0, 0xA0, 0xFF)}
+        line_num = start
+        attributes = {
+            "color": (0xA0, 0xA0, 0xA0, 0xFF),
+            "underline": None,
+            "bold": None,
+            "italic": None,
+        }
         while True:
             try:
                 self.insert_text(p, f"{line_num:>4d} ", attributes=attributes)
