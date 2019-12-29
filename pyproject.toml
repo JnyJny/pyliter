@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "pyliter"
 version = "1.1.1"
-description = ""
+readme = "README.rst"
 authors = ["jnyjny <erik.oshaughnessy@gmail.com>"]
 license = "Apache-2.0"
+homepage = "https://github.com/JnyJny/pyliter"
+repository = "https://github.com/JnyJny/pyliter"
+documentation = "https://github.com/JnyJny/pyliter"
 
 [tool.poetry.scripts]
 pyliter="pyliter.__main__:pyliter_cli"
