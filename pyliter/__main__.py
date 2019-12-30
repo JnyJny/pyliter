@@ -9,7 +9,7 @@ import yaml
 from importlib.resources import read_text
 
 from . import VERSION
-from .render import OnscreenRender
+from .render import PythonRender
 from .color import Color
 
 from . import resources
@@ -21,7 +21,7 @@ import io
 
 @click.command()
 @click.argument("input-file", type=click.File(mode="rb"), default=sys.stdin)
-@click.argument("output-file", type=click.Path(allow_dash=True), default=sys.stdout)
+@click.option("-o", "--output-file", type=click.Path(), default=None)
 @click.option("-l", "--start-line", default=0, help="line to begin displaying")
 @click.option("-n", "--line-count", default=10, help="number of lines to display")
 @click.option("-p", "--preview", is_flag=True, default=False)
@@ -47,6 +47,9 @@ def pyliter_cli(
     and writes color annotated text in PNG format to OUTPUT_FILE.
     """
 
+    if not output_file:
+        preview = True
+
     style = yaml.safe_load(read_text(resources, "default_style.yaml"))
 
     for category, attributes in style.items():
@@ -63,6 +66,8 @@ def pyliter_cli(
     if input_file == sys.stdin:
         input_file = io.BytesIO(sys.stdin.buffer.read())
 
-    render = OnscreenRender(input_file, start_line, line_count, style, output_file)
+    render = PythonRender(
+        input_file, start_line, line_count, style, preview, output_file
+    )
 
-    render.run(preview)
+    render.run()
