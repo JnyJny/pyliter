@@ -25,7 +25,7 @@ from .style_book import StyleBook
 @click.option("-p", "--preview", is_flag=True, default=False)
 @click.option("-t", "--transparent", is_flag=True, default=False)
 @click.option("-s", "--style-name", type=click.STRING, default="default")
-@click.option("--list-styles", is_flag=True, default=False)
+@click.option("-L", "--list-styles", is_flag=True, default=False)
 @click.option("-d", "--debug", is_flag=True, hidden=True, default=False)
 @click.version_option(VERSION)
 def pyliter_cli(
@@ -56,13 +56,23 @@ def pyliter_cli(
 
     """
 
-    if not output_file:
-        preview = True
-
-    stylebook = StyleBook.by_name(style_name)
+    if list_styles:
+        for style in StyleBook.available_styles():
+            print(style)
+        return
 
     if input_file == sys.stdin:
         input_file = io.BytesIO(sys.stdin.buffer.read())
+
+    if not output_file:
+        preview = True
+
+    try:
+        stylebook = StyleBook.by_name(style_name)
+    except FileNotFoundError:
+        print(click.get_current_context().get_help())
+        print(f"\nUnknown style: '{style_name}'\n")
+        return
 
     render = PythonRender(
         input_file, start_line, line_count, stylebook, preview, transparent
