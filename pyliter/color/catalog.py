@@ -2,6 +2,7 @@
 """
 
 import collections
+import string
 import yaml
 
 from importlib.resources import read_text
@@ -10,12 +11,9 @@ from .. import resources
 
 def make_color_key(name):
     """Normalizes a color name to a lowercase string with
-    no embedded white space; tabs, newlines, newline/returns
-    and spaces are removed.
+    no embedded white spaces and no embedded punctuation.
     """
-
-    tt = str.maketrans({"\n": "", "\t": "", "\r": "", " ": ""})
-
+    tt = str.maketrans({k: "" for k in string.punctuation + string.whitespace})
     return name.translate(tt).strip().casefold()
 
 
