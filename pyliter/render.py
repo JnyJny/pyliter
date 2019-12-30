@@ -1,40 +1,37 @@
-""" pyglet application
+""" python rendering pyglet Window
 """
 import pyglet
 from .document import PythonDocument
 from .color import Color
 
-# Comment goes here
-#         some more
 
-
-class OnscreenRender(pyglet.window.Window):
+class PythonRender(pyglet.window.Window):
     def __init__(
         self,
         fileobj,
         start_line,
         line_count,
         style_book: dict = None,
+        preview: bool = False,
         output_path: str = None,
-        debug: bool = False,
     ):
+        """Render syntax-highlighted Python code to a window using
+        the supplied style_book.
 
-        self.debug = debug
-        self.output_path = output_path or "screenshot.png"
+        :param fileobj:     file-like object containing Python text
+        :param start_line:  line to begin rendering
+        :param line_count:  number of lines to render
+        :param style_book:  dictionary of style dictionaries
+        :param output_path: save rendered text to path
+        :param preview:     controls whether the render text is displayed
+
+        """
+        self.output_path = output_path
+        self.preview = preview
 
         self.document = PythonDocument(fileobj, start_line, line_count, style_book)
 
         width, height = self.document.dimensions
-
-        config = pyglet.gl.Config(
-            depth=32,
-            sample_buffers=1,
-            samples=4,
-            double_buffer=True,
-            depth_buffer=0,
-            stereo=0,
-            alpha_size=8,
-        )
 
         try:
             caption = fileobj.name
@@ -44,66 +41,43 @@ class OnscreenRender(pyglet.window.Window):
         super().__init__(
             width=width + (self.margin * 2),
             height=height + (self.margin * 2),
-            config=config,
-            visible=True,
-            caption=fileobj.name,
+            visible=preview,
+            caption=caption,
         )
 
         pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
         pyglet.gl.glBlendFunc(pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
         pyglet.gl.glClearColor(*Color(*self.document.background_color).rgba_f)
 
+        if (self.width, self.height) != self.get_viewport_size():
+            # EJO - this is magic
+            pyglet.gl.glMatrixMode(pyglet.gl.GL_PROJECTION)
+            pyglet.gl.glLoadIdentity()
+            width, height = self.get_viewport_size()
+            pyglet.gl.glOrtho(0, width, 0, height, -1, 1)
+            pyglet.gl.glMatrixMode(pyglet.gl.GL_MODELVIEW)
+            # EOM - end of magic
+
         self.layout.x = self.margin
         self.layout.y = self.margin
 
-        if self.debug:
-            self.batch.add(
-                8,
-                pyglet.gl.GL_LINES,
-                self.background,
-                ("v2i", self.text_bounds),
-                ("c3B", (255, 0, 0) * 8),
-            )
-        self.active = True
-
     @property
     def margin(self):
+        """The width of the margin around the TextLayout widget;
+        top, bottom and sides.
+        """
         try:
             return self._margin
         except AttributeError:
             pass
-        self._margin = self.document.font.height * 2
+        self._margin = self.document.font.height // 2
         return self._margin
 
     @property
-    def batch(self):
-        try:
-            return self._batch
-        except AttributeError:
-            pass
-        self._batch = pyglet.graphics.Batch()
-        return self._batch
-
-    @property
-    def foreground(self):
-        try:
-            return self._foreground
-        except AttributeError:
-            pass
-        self._foreground = pyglet.graphics.OrderedGroup(0)
-        return self._foreground
-
-    @property
-    def background(self):
-        try:
-            return self._background
-        except AttributeError:
-            pass
-        self._background = pyglet.graphics.OrderedGroup(1)
-        return self._background
-
-    @property
     def layout(self):
+        """A pyglet.text.layout.TextLayout widget configured to be
+        rendered in the window's batch in the foreground group.
+        """
         try:
             return self._layout
         except AttributeError:
@@ -115,43 +89,35 @@ class OnscreenRender(pyglet.window.Window):
             self.height - (self.margin * 2),
             multiline=True,
             wrap_lines=False,
-            batch=self.batch,
-            group=self.foreground,
         )
         return self._layout
 
     def on_draw(self):
+        """Clear the window and draw it's contents (again).
+        """
         self.clear()
-        if self.debug:
-            pyglet.gl.glColor4f(1, 0, 0, 1)
-            pyglet.gl.glLineWidth(3)
-        self.batch.draw()
-        pyglet.image.get_buffer_manager().get_color_buffer().save(self.output_path)
+        self.layout.draw()
+        self._save()
 
-    def on_show(self):
+    def _save(self):
+        """Saves the contents of this window to self.output_path.
+        """
 
-        self.on_draw()
-        self.active = False
+        if not self.output_path:
+            return
 
-    @property
-    def text_bounds(self):
-        try:
-            return self._text_bounds
-        except AttributeError:
-            pass
+        image = pyglet.image.get_buffer_manager().get_color_buffer()
 
-        x = self.layout.x
-        y = self.layout.y
-        w = x + self.layout.width
-        h = x + self.layout.height + 1
+        if (self.width, self.height) != self.get_viewport_size():
+            image = image.get_region(0, 0, self.width, self.height)
 
-        self._text_bounds = (x, y, x, h, x, h, w, h, w, h, w, y, w, y, x, y)
-        return self._text_bounds
+        image.save(self.output_path)
 
-    def run(self, preview: bool = False):
+    def run(self):
+        """
+        """
+        if not self.preview:
+            self.on_draw()
+            return
 
-        if preview:
-            pyglet.app.run()
-        else:
-            while self.active:
-                self.dispatch_events()
+        pyglet.app.run()

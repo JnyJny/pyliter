@@ -37,9 +37,7 @@ class ExtendedToken:
     attributes: dict = field(default_factory=dict, init=False, repr=False)
 
     @classmethod
-    def from_file(
-        cls, input_file, start_line: int, line_count: int, classifier=None
-    ) -> tuple:
+    def from_file(cls, input_file, classifier=None) -> tuple:
 
         try:
             classifier = classifier()
@@ -54,13 +52,21 @@ class ExtendedToken:
 
         text = tokenize.untokenize(tokens).decode("utf-8")
 
+        return tokens, text
+
+    @classmethod
+    def lines_from_file(
+        cls, input_file, start_line: int, line_count: int, classifier=None
+    ):
+
+        tokens, text = cls.from_file(input_file, classifier)
+
         if line_count == -1:
             end_line = line_count
         else:
             end_line = start_line + line_count
 
         text = "\n".join(text.splitlines()[start_line:end_line])
-
         # TokenInfo.start is a tuple of (line number, offset), line number
         # starts at one instead of zero so subtract one to avoid a one-off bug.
         tokens = [t for t in tokens if start_line <= (t.start[0] - 1) < end_line]
