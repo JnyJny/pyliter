@@ -55,7 +55,7 @@ Usage
 Example
 -------
 
-.. image:: https://github.com/JnyJny/pyliter/blob/master/screenshot.png
+.. image:: https://github.com/JnyJny/pyliter/blob/master/examples/screenshot.png
 	   :width: 400
 	   :alt: Super Awesome PNG Screenshot
 
