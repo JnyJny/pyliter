@@ -3,17 +3,15 @@
 """
 
 import click
+import io
 import sys
 import yaml
 
-from importlib.resources import read_text
 
 from . import VERSION
 from .render import PythonRender
-from .color import Color
+from .style_book import StyleBook
 
-from . import resources
-import io
 
 # Fun comment here
 #
@@ -43,31 +41,31 @@ def pyliter_cli(
 ):
     """Python syntax highlighting
 
-    Performs Python syntax highlighting on code found in INPUT_FILE
-    and writes color annotated text in PNG format to OUTPUT_FILE.
+    Renders syntax-highlighted text to PNG file and optional previews
+    the render in a window before saving.
+
+    Examples:
+
+    $ pyliter awesome_snippet.py -o awesome_snippet.png
+
+    $ pyliter -o awesome_snippet.png < awesome_snippet.py
+
+    $ pyliter awesome_snippet.py -p
+
+    $ pyliter awesome_snippet.py -p -l 11 -n 27
+
     """
 
     if not output_file:
         preview = True
 
-    style = yaml.safe_load(read_text(resources, "default_style.yaml"))
-
-    for category, attributes in style.items():
-        for color_key in ["color", "background_color", "underline"]:
-            try:
-                color_spec = attributes[color_key]
-                color = Color.from_any(color_spec)
-                if color_key == "background_color" and transparent:
-                    color.alpha.value = 0
-                attributes[color_key] = color.rgba
-            except KeyError:
-                pass
+    stylebook = StyleBook.by_name(style_name)
 
     if input_file == sys.stdin:
         input_file = io.BytesIO(sys.stdin.buffer.read())
 
     render = PythonRender(
-        input_file, start_line, line_count, style, preview, output_file
+        input_file, start_line, line_count, stylebook, preview, transparent
     )
 
-    render.run()
+    render.run(output_file)

@@ -6,8 +6,21 @@ from .token import DOCSTRING
 
 class PythonDocument(pyglet.text.document.FormattedDocument):
     def __init__(
-        self, fileobj, start: int = 0, line_count: int = -1, style_book: dict = None
+        self,
+        fileobj,
+        start: int = 0,
+        line_count: int = -1,
+        style_book: dict = None,
+        debug: bool = False,
     ):
+
+        # The Order of Operations:
+        # 1. setup subclass-specific attributes
+        # 2. call __init__ of superclass
+        # 3. set the default document style
+        # 4. style documents with token derived attributes
+        # 5. insert line numbers if requested
+        # 6. trim document to keep lines in range [start, start+line_count]
 
         self.style_book = style_book or {
             "DEFAULT": {
@@ -18,34 +31,84 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
                 "line_numbers": False,
             }
         }
-        self.first = start
-        self.last = start + line_count
 
-        self.tokens, self.raw_text = PythonTokens.from_file(fileobj, start, line_count)
+        self.tokens, self.raw_text = PythonTokens.from_file(fileobj)
 
         super().__init__(self.raw_text.translate(str.maketrans({"{": "{{", "}": "}}"})))
 
-        self.line_count = len(self.text.splitlines()) + 1
-        # FormattedDocument does some messing about with newlines in the source
-        # text which results in the loss of the terminal newline. This in turn
-        # causes an off-by-one bug when counting the number of lines in the text.
-
-        self.set_style(
-            start=0, end=len(self.text), attributes=self.style_book["DEFAULT"]
-        )
+        self.set_style(start=0, end=self.eot, attributes=self.style_book["DEFAULT"])
 
         self._apply_token_styles()
 
         if self.style_book["DEFAULT"].get("line_numbers", False):
-            self._insert_line_numbers(start)
+            self._insert_line_numbers()
 
-    def _insert_line_numbers(self, start):
+        if debug:
+            # EJO - styles each line with a green underscore at the front and a
+            #       red underscore at the end
+            for i, (b, e) in enumerate(self._line_extents):
+                self.set_style(b, b + 1, attributes={"underline": (0, 255, 0, 255)})
+                self.set_style(e - 1, e, attributes={"underline": (255, 0, 0, 255)})
+
+        self._keep(start, line_count)
+
+    @property
+    def eot(self):
+        """End Of Text: integer position of the last character in self.text.
         """
+        return len(self.text) + 1
+
+    def _keep(self, start, line_count) -> None:
+        """Keep the lines in the range of [start, start+line_count].
+        """
+        self._trim_lines(0, start)
+        off = 0 if start == 0 else 1
+        self._trim_lines(line_count + off, len(self.text.splitlines()))
+
+    def _trim_lines(self, from_line: int, to_line: int) -> None:
+        """Removes the lines from self.text in the range of [from_line, to_line]
+        """
+        if from_line == to_line:
+            return
+        extents = self._line_extents
+        self.delete_text(extents[from_line][0], extents[to_line - 1][1])
+
+    @property
+    def _line_extents(self) -> list:
+        """A list of tuples, each tuple is the starting and ending
+        index into self.text of a line. Line 0 is the first tuple and
+        so on. Lines are defined as a substring ending in a newline
+        character '\n'.  Note: line extents change after text insert
+        and delete options, so don't hang onto this list between
+        operations.
         """
         p = 0
-        line_num = start
+        extents = []
+        while True:
+            try:
+                e = self.text.index("\n", p)
+                extents.append((p, e))
+                p = e + 1
+            except ValueError:
+                e = self.eot
+                extents.append((p, e))
+                break
+        return extents
+
+    def _insert_line_numbers(self, color: tuple = None) -> None:
+        """Adds line numbers to the beginning of each line
+        starting at line zero. Line numbers are four digits
+        right justified and rendered with the given color.
+
+        :param tuple color: 4-tuple of integers [0,255]
+        """
+
+        color = color or (0xA0, 0xA0, 0xA0, 0xA0)  # dark gray
+
+        p = 0
+        line_num = 0
         attributes = {
-            "color": (0xA0, 0xA0, 0xA0, 0xFF),
+            "color": color,
             "underline": None,
             "bold": None,
             "italic": None,
@@ -58,73 +121,74 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
             except ValueError:
                 break
 
-    def _apply_token_styles(self, tokens: list = None) -> None:
+    def _apply_token_styles(self, tokens: list = None, style_book: dict = None) -> None:
+        """Using the token category as a key into the style book, look for
+        the starting position of each token and apply the appropriate style.
+
+        :param list tokens:
+        :param dict style_book:
         """
-        """
+
         tokens = tokens or self.tokens
+        style_book = style_book or self.style_book
 
         p = 0
 
         for token in tokens:
-            if not token.category in self.style_book:
+            if not token.category in style_book:
                 continue
 
-            try:
-                if token.exact_type == DOCSTRING:
+            if token.exact_type == DOCSTRING:
+                try:
                     p = self.text.index('"""', p)
-                    l = self.text.index('"""', p + 1) + 3
-                else:
+                except ValueError:
+                    pass
+                try:
+                    e = self.text.index('"""', p + 1) + 3
+                except ValueError:
+                    e = self.eot
+            else:
+                try:
                     p = self.text.index(token.string, p)
-                    l = len(token.string)
-            except ValueError:
-                print("F", p, token.string)
-                print(repr(token))
-                continue
+                    e = p + len(token.string)
+                except ValueError:
+                    print("F", p, token.string, repr(token))
+                    continue
 
-            self.set_style(p, p + l, self.style_book[token.category])
-            p += l
+            self.set_style(p, e, style_book[token.category])
+            p = e
 
     @property
     def background_color(self) -> tuple:
-        """
+        """Convenience accessor for self.style_book['DEFAULT']['background_color'].
         """
         return self.style_book["DEFAULT"]["background_color"]
 
     @property
     def color(self) -> tuple:
-        """
+        """Convenience accessor for self.style_book['DEFAULT']['color'].
         """
         return self.style_book["DEFAULT"]["color"]
 
     @property
     def dimensions(self) -> tuple:
+        """A 2-tuple of width and height expressed in pixels.
         """
-        """
-        try:
-            return self._dimensions
-        except AttributeError:
-            pass
-        self._dimensions = (
-            self.max_column * self.font.size,
-            self.line_count * self.font.height,
+
+        lines = self.text.splitlines()
+        maxc = max(len(l) for l in lines)
+        nlines = len(lines) + 1
+
+        return (
+            maxc * self.font.size,
+            nlines * self.font.height,
         )
-
-        return self._dimensions
-
-    @property
-    def max_column(self) -> int:
-        """
-        """
-        try:
-            return self._max_column
-        except AttributeError:
-            pass
-        self._max_column = max(len(l.strip()) for l in self.raw_text.splitlines())
-        return self._max_column
 
     @property
     def font(self):
-        """
+        """Convenience accessor for self.get_font() whose side-effect
+        is setting a "height" attribute on font calculated with the
+        sum of the font's ascent and abs(descent) values.
         """
         try:
             return self._font
