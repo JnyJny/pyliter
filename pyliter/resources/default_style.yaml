@@ -1,7 +1,7 @@
 # see documentation for click.style
 DEFAULT:
   font_name: Source Code Pro
-  font_size: 18
+  font_size: 24
   background_color: black
   color: white
   line_numbers: true

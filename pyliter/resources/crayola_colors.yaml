@@ -1,0 +1,648 @@
+almond:
+- 238
+- 217
+- 196
+antiquebrass:
+- 200
+- 138
+- 101
+apricot:
+- 253
+- 213
+- 177
+aquamarine:
+- 149
+- 224
+- 232
+asparagus:
+- 123
+- 160
+- 91
+bananamania:
+- 251
+- 231
+- 178
+beaver:
+- 146
+- 111
+- 91
+bittersweet:
+- 254
+- 111
+- 94
+black:
+- 0
+- 0
+- 0
+bluebell:
+- 153
+- 153
+- 204
+bluegray:
+- 200
+- 200
+- 205
+bluegreen:
+- 0
+- 149
+- 183
+bluei:
+- 73
+- 151
+- 208
+blueii:
+- 69
+- 112
+- 230
+blueiii:
+- 0
+- 102
+- 255
+blueviolet:
+- 100
+- 86
+- 183
+blush:
+- 219
+- 80
+- 121
+brickred:
+- 198
+- 45
+- 66
+brilliantrose:
+- 230
+- 103
+- 206
+brown:
+- 175
+- 89
+- 62
+burntorange:
+- 255
+- 127
+- 73
+burntsienna:
+- 233
+- 116
+- 81
+burntumber:
+- 128
+- 85
+- 51
+cadetblue:
+- 169
+- 178
+- 195
+canary:
+- 255
+- 255
+- 153
+caribbeangreen:
+- 0
+- 204
+- 153
+carmine:
+- 230
+- 46
+- 107
+carnationpink:
+- 255
+- 166
+- 201
+celestialblue:
+- 112
+- 112
+- 204
+cerise:
+- 218
+- 50
+- 135
+cerulean:
+- 2
+- 164
+- 211
+ceruleanblue:
+- 51
+- 154
+- 204
+charcoalgray:
+- 115
+- 106
+- 98
+cobaltblue:
+- 140
+- 144
+- 200
+copper:
+- 218
+- 138
+- 103
+cornflower:
+- 147
+- 204
+- 234
+cottoncandy:
+- 255
+- 183
+- 213
+dandelion:
+- 254
+- 216
+- 93
+darkvenetianred:
+- 179
+- 59
+- 36
+denim:
+- 21
+- 96
+- 189
+desertsand:
+- 237
+- 201
+- 175
+eggplant:
+- 97
+- 64
+- 81
+englishvermilion:
+- 204
+- 71
+- 75
+fern:
+- 99
+- 183
+- 108
+forestgreen:
+- 95
+- 167
+- 119
+fuchsia:
+- 193
+- 84
+- 193
+fuzzywuzzy:
+- 135
+- 66
+- 31
+goldenrod:
+- 252
+- 214
+- 103
+goldi:
+- 146
+- 146
+- 110
+goldii:
+- 230
+- 190
+- 138
+grannysmithapple:
+- 157
+- 224
+- 147
+gray:
+- 139
+- 134
+- 128
+green:
+- 58
+- 166
+- 85
+greenblue:
+- 40
+- 135
+- 200
+greenyellow:
+- 241
+- 231
+- 136
+inchworm:
+- 175
+- 227
+- 19
+indianred:
+- 185
+- 78
+- 72
+indigo:
+- 79
+- 105
+- 198
+jazzberryjam:
+- 165
+- 11
+- 94
+junglegreen:
+- 41
+- 171
+- 135
+lavenderi:
+- 191
+- 143
+- 204
+lavenderii:
+- 251
+- 174
+- 210
+lemonyellow:
+- 255
+- 255
+- 159
+lightblue:
+- 143
+- 216
+- 216
+lightchromegreen:
+- 190
+- 230
+- 75
+lightvenetianred:
+- 230
+- 115
+- 92
+macaroniandcheese:
+- 255
+- 185
+- 123
+madderlake:
+- 204
+- 51
+- 54
+magenta:
+- 246
+- 83
+- 166
+mahogany:
+- 202
+- 52
+- 53
+maize:
+- 242
+- 198
+- 73
+manatee:
+- 141
+- 144
+- 161
+mangotango:
+- 231
+- 114
+- 0
+maroon:
+- 195
+- 33
+- 72
+mauvelous:
+- 240
+- 145
+- 169
+maximumblue:
+- 71
+- 171
+- 204
+maximumbluegreen:
+- 48
+- 191
+- 191
+maximumbluepurple:
+- 172
+- 172
+- 230
+maximumgreen:
+- 94
+- 140
+- 49
+maximumgreenyellow:
+- 217
+- 230
+- 80
+maximumpurple:
+- 115
+- 51
+- 128
+maximumred:
+- 217
+- 33
+- 33
+maximumredpurple:
+- 166
+- 58
+- 121
+maximumyellow:
+- 250
+- 250
+- 55
+maximumyellowred:
+- 242
+- 186
+- 73
+mediumchromegreen:
+- 108
+- 166
+- 124
+mediumrose:
+- 217
+- 108
+- 190
+mediumviolet:
+- 143
+- 71
+- 179
+melon:
+- 254
+- 186
+- 173
+middleblue:
+- 126
+- 212
+- 230
+middlebluegreen:
+- 141
+- 217
+- 204
+middlebluepurple:
+- 139
+- 114
+- 190
+middlegreen:
+- 77
+- 140
+- 87
+middlegreenyellow:
+- 172
+- 191
+- 96
+middlepurple:
+- 217
+- 130
+- 181
+middlered:
+- 229
+- 142
+- 115
+middleredpurple:
+- 165
+- 83
+- 83
+middleyellow:
+- 255
+- 235
+- 0
+middleyellowred:
+- 236
+- 177
+- 118
+midnightblue:
+- 0
+- 70
+- 140
+mountainmeadow:
+- 26
+- 179
+- 133
+mulberry:
+- 200
+- 80
+- 155
+navyblue:
+- 0
+- 102
+- 204
+olivegreen:
+- 181
+- 179
+- 92
+orange:
+- 255
+- 136
+- 51
+orangered:
+- 255
+- 83
+- 73
+orangeyellow:
+- 248
+- 213
+- 104
+orchid:
+- 226
+- 156
+- 210
+outerspace:
+- 45
+- 56
+- 58
+pacificblue:
+- 0
+- 157
+- 196
+peach:
+- 255
+- 203
+- 164
+periwinkle:
+- 195
+- 205
+- 230
+permanentgeraniumlake:
+- 225
+- 44
+- 44
+pigpink:
+- 253
+- 215
+- 228
+pinegreen:
+- 1
+- 120
+- 111
+pinkflamingo:
+- 252
+- 116
+- 253
+pinksherbert:
+- 247
+- 163
+- 142
+plum:
+- 142
+- 49
+- 121
+purpleheart:
+- 101
+- 45
+- 193
+purplemountainsmajesty:
+- 214
+- 174
+- 221
+rawsienna:
+- 210
+- 125
+- 70
+rawsiennai:
+- 230
+- 188
+- 92
+rawumber:
+- 102
+- 82
+- 51
+razzmatazz:
+- 227
+- 11
+- 92
+red:
+- 237
+- 10
+- 63
+redorange:
+- 255
+- 104
+- 31
+redviolet:
+- 187
+- 51
+- 133
+robinseggblue:
+- 0
+- 204
+- 204
+royalpurple:
+- 107
+- 63
+- 160
+salmon:
+- 255
+- 145
+- 164
+scarlet:
+- 253
+- 14
+- 53
+seagreen:
+- 147
+- 223
+- 184
+sepia:
+- 158
+- 91
+- 64
+shadow:
+- 131
+- 112
+- 80
+shamrock:
+- 51
+- 204
+- 153
+silver:
+- 201
+- 192
+- 187
+skyblue:
+- 118
+- 215
+- 234
+springgreen:
+- 236
+- 235
+- 189
+sunsetorange:
+- 254
+- 76
+- 64
+tan:
+- 217
+- 154
+- 108
+tealblue:
+- 0
+- 128
+- 128
+thistle:
+- 235
+- 176
+- 215
+ticklemepink:
+- 252
+- 128
+- 165
+timberwolf:
+- 217
+- 214
+- 207
+tropicalrainforest:
+- 0
+- 117
+- 94
+tumbleweed:
+- 222
+- 166
+- 129
+turquoiseblue:
+- 108
+- 218
+- 231
+ultramarineblue:
+- 63
+- 38
+- 191
+vandykebrown:
+- 102
+- 66
+- 40
+venetianred:
+- 204
+- 85
+- 61
+violetblue:
+- 118
+- 110
+- 200
+violeti:
+- 115
+- 46
+- 108
+violetii:
+- 131
+- 89
+- 163
+violetred:
+- 247
+- 70
+- 138
+vividtangerine:
+- 255
+- 153
+- 128
+vividviolet:
+- 128
+- 55
+- 144
+wildblueyonder:
+- 122
+- 137
+- 184
+wildstrawberry:
+- 255
+- 51
+- 153
+wisteria:
+- 201
+- 160
+- 220
+yellow:
+- 251
+- 232
+- 112
+yellowgreen:
+- 197
+- 225
+- 122
+yelloworange:
+- 255
+- 174
+- 66
