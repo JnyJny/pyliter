@@ -75,6 +75,22 @@ from .style_book import StyleBook
     show_default=True,
 )
 @click.option(
+    "-f",
+    "--font-name",
+    type=click.STRING,
+    default="courier",
+    help="Font name.",
+    show_default=True,
+)
+@click.option(
+    "-S",
+    "--font-size",
+    type=click.INT,
+    default=24,
+    help="Font size",
+    show_default=True,
+)
+@click.option(
     "-L",
     "--list-styles",
     is_flag=True,
@@ -92,6 +108,8 @@ def pyliter_cli(
     preview,
     transparent,
     style_name,
+    font_name,
+    font_size,
     list_styles,
     debug,
 ):
@@ -121,6 +139,9 @@ def pyliter_cli(
 
     if not output_file:
         preview = True
+
+    stylebook.default["font_name"] = font_name
+    stylebook.default["font_size"] = font_size
 
     render = PythonRender(
         input_file,

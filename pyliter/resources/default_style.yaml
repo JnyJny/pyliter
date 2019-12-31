@@ -1,6 +1,4 @@
 DEFAULT:
-  font_name: Source Code Pro
-  font_size: 24
   background_color: black
   color: white
 OP:
