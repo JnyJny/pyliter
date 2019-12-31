@@ -38,38 +38,22 @@ class ExtendedToken:
 
     @classmethod
     def from_file(cls, input_file, classifier=None) -> tuple:
+        """
+        :param input_file: file-like object with a readline
+        :param classifier: pyliter.token.TokenClassifier
 
+        """
         try:
             classifier = classifier()
         except TypeError:
             classifier = TokenClassifier()
 
         tokens = []
-
         for t in tokenize.tokenize(input_file.readline):
             tokens.append(cls(*t._asdict().values(), t.exact_type))
-            classifier(tokens[-1], tokens[:-1])
+            classifier.classify(tokens[-1])
 
         text = tokenize.untokenize(tokens).decode("utf-8")
-
-        return tokens, text
-
-    @classmethod
-    def lines_from_file(
-        cls, input_file, start_line: int, line_count: int, classifier=None
-    ):
-
-        tokens, text = cls.from_file(input_file, classifier)
-
-        if line_count == -1:
-            end_line = line_count
-        else:
-            end_line = start_line + line_count
-
-        text = "\n".join(text.splitlines()[start_line:end_line])
-        # TokenInfo.start is a tuple of (line number, offset), line number
-        # starts at one instead of zero so subtract one to avoid a one-off bug.
-        tokens = [t for t in tokens if start_line <= (t.start[0] - 1) < end_line]
 
         return tokens, text
 
@@ -115,10 +99,10 @@ class TokenClassifier:
 
         return self._categories
 
-    def __call__(self, token, prev_tokens):
-        self.classify(token, prev_tokens)
-
-    def classify(self, token, prev_tokens):
+    def classify(self, token) -> None:
+        """
+        :param ExtendedToken token:
+        """
 
         while True:
             if keyword.iskeyword(token.string):
@@ -141,20 +125,28 @@ class TokenClassifier:
                 token.exact_type = SELF
                 break
 
-            try:
-                if prev_tokens[-1].string == "def":
-                    token.exact_type = FNAME
+            if token.type == TOKEN.NAME:
+                if token.line.strip().startswith("def"):
+                    token.exactType = FNAME
                     break
 
-                if prev_tokens[-1].string == "class":
+                if token.line.strip().startswith("class"):
                     token.exact_type = CNAME
                     break
 
-                if prev_tokens[-1].string == "import":
+                if token.line.strip().startswith(("import", "from", "as")):
                     token.exact_type = INAME
                     break
-            except IndexError:
-                pass
+
+                try:
+                    eq = token.line.index(" = ")
+                    tok = token.start[1]
+                    if tok < eq and ":" not in token.line:
+                        token.exact_type = LVAL
+                        break
+                except ValueError:
+                    pass
+
             break
 
         # need to backtrack for LVAL classification
