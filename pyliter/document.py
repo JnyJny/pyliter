@@ -11,6 +11,7 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
         start: int = 0,
         line_count: int = -1,
         style_book: dict = None,
+        number_lines: bool = False,
         debug: bool = False,
     ):
 
@@ -40,7 +41,7 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
 
         self._apply_token_styles()
 
-        if self.style_book["DEFAULT"].get("line_numbers", False):
+        if number_lines:
             self._insert_line_numbers()
 
         if debug:

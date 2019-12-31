@@ -15,6 +15,7 @@ class PythonRender(pyglet.window.Window):
         style_book: dict = None,
         preview: bool = False,
         transparent: bool = False,
+        number_lines: bool = False,
     ):
         """Render syntax-highlighted Python code to a window using
         the supplied style_book.
@@ -29,7 +30,9 @@ class PythonRender(pyglet.window.Window):
 
         self.preview = preview
 
-        self.document = PythonDocument(fileobj, start_line, line_count, style_book)
+        self.document = PythonDocument(
+            fileobj, start_line, line_count, style_book, number_lines
+        )
 
         width, height = self.document.dimensions
 

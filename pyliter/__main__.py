@@ -18,14 +18,69 @@ from .style_book import StyleBook
 
 
 @click.command()
-@click.argument("input-file", type=click.File(mode="rb"), default=sys.stdin)
-@click.option("-o", "--output-file", type=click.Path(), default=None)
-@click.option("-l", "--start-line", default=0, help="line to begin displaying")
-@click.option("-n", "--line-count", default=10, help="number of lines to display")
-@click.option("-p", "--preview", is_flag=True, default=False)
-@click.option("-t", "--transparent", is_flag=True, default=False)
-@click.option("-s", "--style-name", type=click.STRING, default="default")
-@click.option("-L", "--list-styles", is_flag=True, default=False)
+@click.argument(
+    "input-file", type=click.File(mode="rb"), default=sys.stdin,
+)
+@click.option(
+    "-o",
+    "--output-file",
+    type=click.Path(),
+    default=None,
+    help="Creates a PNG with the supplied path.",
+)
+@click.option(
+    "-l",
+    "--start-line",
+    default=0,
+    help="Line number to begin display.",
+    show_default=True,
+)
+@click.option(
+    "-n",
+    "--line-count",
+    default=10,
+    help="Number of lines to display.",
+    show_default=True,
+)
+@click.option(
+    "-N",
+    "--no-line-numbers",
+    is_flag=True,
+    default=False,
+    help="Disable line numbers in output.",
+    show_default=True,
+)
+@click.option(
+    "-p",
+    "--preview",
+    is_flag=True,
+    default=False,
+    help="Previews output in window.",
+    show_default=True,
+)
+@click.option(
+    "-t",
+    "--transparent",
+    is_flag=True,
+    default=False,
+    help="Write output PNG with transparency.",
+    show_default=True,
+)
+@click.option(
+    "-s",
+    "--style-name",
+    type=click.STRING,
+    default="default",
+    help="Style to apply to input file.",
+    show_default=True,
+)
+@click.option(
+    "-L",
+    "--list-styles",
+    is_flag=True,
+    default=False,
+    help="List available styles and exits.",
+)
 @click.option("-d", "--debug", is_flag=True, hidden=True, default=False)
 @click.version_option(VERSION)
 def pyliter_cli(
@@ -33,6 +88,7 @@ def pyliter_cli(
     output_file,
     start_line,
     line_count,
+    no_line_numbers,
     preview,
     transparent,
     style_name,
@@ -44,15 +100,7 @@ def pyliter_cli(
     Renders syntax-highlighted text to PNG file and optional previews
     the render in a window before saving.
 
-    Examples:
-
-    $ pyliter awesome_snippet.py -o awesome_snippet.png
-
-    $ pyliter -o awesome_snippet.png < awesome_snippet.py
-
-    $ pyliter awesome_snippet.py -p
-
-    $ pyliter awesome_snippet.py -p -l 11 -n 27
+    If the optional output path is omitted, preview is enabled.
 
     """
 
@@ -61,12 +109,6 @@ def pyliter_cli(
             print(style)
         return
 
-    if input_file == sys.stdin:
-        input_file = io.BytesIO(sys.stdin.buffer.read())
-
-    if not output_file:
-        preview = True
-
     try:
         stylebook = StyleBook.by_name(style_name)
     except FileNotFoundError:
@@ -74,8 +116,20 @@ def pyliter_cli(
         print(f"\nUnknown style: '{style_name}'\n")
         return
 
+    if input_file == sys.stdin:
+        input_file = io.BytesIO(sys.stdin.buffer.read())
+
+    if not output_file:
+        preview = True
+
     render = PythonRender(
-        input_file, start_line, line_count, stylebook, preview, transparent
+        input_file,
+        start_line,
+        line_count,
+        stylebook,
+        preview,
+        transparent,
+        not no_line_numbers,
     )
 
     render.run(output_file)
