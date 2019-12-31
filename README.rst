@@ -50,6 +50,8 @@ Usage
      -t, --transparent         Write output PNG with transparency.  [default:
                                False]
      -s, --style-name TEXT     Style to apply to input file.  [default: default]
+     -f, --font-name TEXT      Font name.  [default: courier]
+     -S, --font-size INTEGER   Font size  [default: 24]
      -L, --list-styles         List available styles and exits.
      --version                 Show the version and exit.
      --help                    Show this message and exit.
