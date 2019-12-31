@@ -1,0 +1,31 @@
+DEFAULT:
+  background_color: black
+  color: white
+OP:
+  color: "#b9936c" 
+KEYWORD:
+  color: "#dac292"
+STRING:
+  color: "#e6e2d3"
+NAME:
+  color: "#c4b7a6"
+BUILTIN:
+  color: "#3e4444"
+NUMBER:
+  color: white
+SELF:
+  color: "#82b74b"
+LVAL:
+  color: white
+FNAME:
+  color: white
+CNAME:
+  color: white
+INAME:
+  color: white
+COMMENT: 
+  color: "#405d27"
+DOCSTRING: 
+  color: "#405d27"
+PRIVATE: 
+  color: "#c1946a"
