@@ -13,10 +13,6 @@ from .render import PythonRender
 from .style_book import StyleBook
 
 
-# Fun comment here
-#
-
-
 @click.command()
 @click.argument(
     "input-file", type=click.File(mode="rb"), default=sys.stdin,
@@ -63,7 +59,7 @@ from .style_book import StyleBook
     "--transparent",
     is_flag=True,
     default=False,
-    help="Write output PNG with transparency.",
+    help="Write PNG with transparency.",
     show_default=True,
 )
 @click.option(
@@ -97,7 +93,6 @@ from .style_book import StyleBook
     default=False,
     help="List available styles and exits.",
 )
-@click.option("-d", "--debug", is_flag=True, hidden=True, default=False)
 @click.version_option(VERSION)
 def pyliter_cli(
     input_file,
@@ -111,15 +106,14 @@ def pyliter_cli(
     font_name,
     font_size,
     list_styles,
-    debug,
 ):
     """Python syntax highlighting
 
-    Renders syntax-highlighted text to PNG file and optional previews
-    the render in a window before saving.
+    Renders syntax-highlighted text to PNG file or preview the render in
+    a window.
 
-    If the optional output path is omitted, preview is enabled.
-
+    If the optional output path is omitted, preview is enabled
+    automatically.
     """
 
     if list_styles:
@@ -128,10 +122,9 @@ def pyliter_cli(
         return
 
     try:
-        stylebook = StyleBook.by_name(style_name)
-    except FileNotFoundError:
-        print(click.get_current_context().get_help())
-        print(f"\nUnknown style: '{style_name}'\n")
+        stylebook = StyleBook.from_any(style_name)
+    except ValueError as error:
+        print_help(str(error))
         return
 
     if input_file == sys.stdin:
@@ -154,3 +147,20 @@ def pyliter_cli(
     )
 
     render.run(output_file)
+
+
+def print_help(msg: str) -> None:
+    """Print the help message for the current click context
+    and the supplied message.
+
+    :param str msg:
+    """
+    print(click.get_current_context().get_help())
+    print(f"\n{msg}\n")
+
+
+@click.command()
+def pyliter_style_cli():
+    """Manage pyliter styles.
+    """
+    pass
