@@ -71,18 +71,19 @@ class PythonRender(pyglet.window.Window):
 
     @property
     def margin(self):
-        """Pixels between edges and layout.
+        """Integer pixels between edges and the text.
         """
         return self.document.font.height
 
     def on_draw(self):
-        """Clear the window and draw it's contents (again).
+        """Clear the window and draw it's contents.
         """
         self.clear()
         self.layout.draw()
 
-    def save(self, filename: str):
+    def save(self, filename: str) -> None:
         """Saves the contents of this window to filename.
+        :param str filename:
         """
 
         if not filename:
@@ -95,14 +96,16 @@ class PythonRender(pyglet.window.Window):
 
         image.save(filename)
 
-    def run(self, filename: str = None):
+    def run(self, filename: str = None) -> None:
         """Start up a pyglet event loop if in preview mode, otherwise
         call this object's on_draw method, save buffer contents to a
         file and call it a day.
-        """
-        if not self.preview:
-            self.on_draw()
-            self.save(filename)
-            return
 
-        pyglet.app.run()
+        :param str filename:
+        """
+
+        self.on_draw()
+        self.save(filename)
+
+        if self.preview:
+            pyglet.app.run()
