@@ -37,7 +37,7 @@ class PythonRender(pyglet.window.Window):
         width, height = self.document.dimensions
 
         self.layout = pyglet.text.layout.TextLayout(
-            self.document, width, height, multiline=True
+            self.document, width, multiline=True
         )
         self.layout.x = self.margin
         self.layout.y = self.margin
@@ -73,7 +73,7 @@ class PythonRender(pyglet.window.Window):
     def margin(self):
         """Pixels between edges and layout.
         """
-        return 0
+        return self.document.font.height
 
     def on_draw(self):
         """Clear the window and draw it's contents (again).
