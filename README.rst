@@ -56,6 +56,10 @@ Usage
      --version                 Show the version and exit.
      --help                    Show this message and exit.
 
+Blank Stares
+============
+
+Some great text here.
 
 Example
 -------
