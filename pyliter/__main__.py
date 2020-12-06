@@ -2,21 +2,22 @@
 
 """
 
-import typer
 import io
 import sys
+
+import typer
 import yaml
 
 from pathlib import Path
 
-from . import VERSION
 from .render import PythonRender
 from .style_book import StyleBook
+
 
 cli = typer.Typer()
 
 
-@cli.callback(invoke_without_command=True)
+@cli.callback()
 def pyliter_main(ctx: typer.Context):
     """Python syntax highlighting"""
 
@@ -43,7 +44,7 @@ def pyliter_render(
     font_name: str = "courier",
     font_size: int = 24,
 ):
-    """Renders syntax-highlighted text to PNG file or a window.
+    """Renders syntax-highlighted text to PNG file or displayed in a window.
 
     If the optional output path is omitted, preview is enabled
     automatically.
@@ -55,7 +56,7 @@ def pyliter_render(
         print_help(str(error))
         return
 
-    if input_file == sys.stdin:
+    if input_file.name == "-":
         input_file = io.BytesIO(sys.stdin.buffer.read())
 
     if not output_file:
