@@ -2,124 +2,52 @@
 
 """
 
-import click
+import typer
 import io
 import sys
 import yaml
 
+from pathlib import Path
 
 from . import VERSION
 from .render import PythonRender
 from .style_book import StyleBook
 
+cli = typer.Typer()
 
-@click.command()
-@click.argument(
-    "input-file", type=click.File(mode="rb"), default=sys.stdin,
-)
-@click.option(
-    "-o",
-    "--output-file",
-    type=click.Path(),
-    default=None,
-    help="Creates a PNG with the supplied path.",
-)
-@click.option(
-    "-l",
-    "--start-line",
-    default=0,
-    help="Line number to begin display.",
-    show_default=True,
-)
-@click.option(
-    "-n",
-    "--line-count",
-    default=10,
-    help="Number of lines to display.",
-    show_default=True,
-)
-@click.option(
-    "-N",
-    "--no-line-numbers",
-    is_flag=True,
-    default=False,
-    help="Disable line numbers in output.",
-    show_default=True,
-)
-@click.option(
-    "-p",
-    "--preview",
-    is_flag=True,
-    default=False,
-    help="Previews output in window.",
-    show_default=True,
-)
-@click.option(
-    "-t",
-    "--transparent",
-    is_flag=True,
-    default=False,
-    help="Write PNG with transparency.",
-    show_default=True,
-)
-@click.option(
-    "-s",
-    "--style-name",
-    type=click.STRING,
-    default="default",
-    help="Style to apply to input file.",
-    show_default=True,
-)
-@click.option(
-    "-f",
-    "--font-name",
-    type=click.STRING,
-    default="courier",
-    help="Font name.",
-    show_default=True,
-)
-@click.option(
-    "-S",
-    "--font-size",
-    type=click.INT,
-    default=24,
-    help="Font size",
-    show_default=True,
-)
-@click.option(
-    "-L",
-    "--list-styles",
-    is_flag=True,
-    default=False,
-    help="List available styles and exits.",
-)
-@click.version_option(VERSION)
-def pyliter_cli(
-    input_file,
-    output_file,
-    start_line,
-    line_count,
-    no_line_numbers,
-    preview,
-    transparent,
-    style_name,
-    font_name,
-    font_size,
-    list_styles,
+
+@cli.callback(invoke_without_command=True)
+def pyliter_main(ctx: typer.Context):
+    """Python syntax highlighting"""
+
+
+@cli.command(name="list")
+def pyliter_list_styles():
+    """List builtin text styles."""
+    for style in StyleBook.available_styles():
+        typer.secho(style)
+
+
+@cli.command(name="render")
+def pyliter_render(
+    input_file: typer.FileBinaryRead,
+    output_file: Path = typer.Option(None, "--output", "-o"),
+    start_line: int = typer.Option(0, "--start-line", "-s"),
+    line_count: int = typer.Option(10, "--line-count", "-L"),
+    no_line_numbers: bool = typer.Option(
+        False, "--no-line-numbers", "-N", is_flag=True
+    ),
+    preview: bool = typer.Option(False, "--preview", "-p", is_flag=True),
+    transparent: bool = typer.Option(False, "--transparent", "-t", is_flag=True),
+    style_name: str = "default",
+    font_name: str = "courier",
+    font_size: int = 24,
 ):
-    """Python syntax highlighting
-
-    Renders syntax-highlighted text to PNG file or preview the render in
-    a window.
+    """Renders syntax-highlighted text to PNG file or a window.
 
     If the optional output path is omitted, preview is enabled
     automatically.
     """
-
-    if list_styles:
-        for style in StyleBook.available_styles():
-            print(style)
-        return
 
     try:
         stylebook = StyleBook.from_any(style_name)
@@ -147,20 +75,3 @@ def pyliter_cli(
     )
 
     render.run(output_file)
-
-
-def print_help(msg: str) -> None:
-    """Print the help message for the current click context
-    and the supplied message.
-
-    :param str msg:
-    """
-    print(click.get_current_context().get_help())
-    print(f"\n{msg}\n")
-
-
-@click.command()
-def pyliter_style_cli():
-    """Manage pyliter styles.
-    """
-    pass
