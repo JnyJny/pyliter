@@ -12,6 +12,7 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
         line_count: int = -1,
         style_book: dict = None,
         number_lines: bool = False,
+        transparent: bool = False,
         debug: bool = False,
     ):
 
@@ -32,6 +33,10 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
                 "line_numbers": False,
             }
         }
+
+        if transparent:
+            r, g, b, a = self.style_book["DEFAULT"]["background_color"]
+            self.style_book["DEFAULT"]["background_color"] = (r, g, b, 0)
 
         self.tokens, self.raw_text = PythonTokens.from_file(fileobj)
 
@@ -55,20 +60,17 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
 
     @property
     def eot(self):
-        """End Of Text: integer position of the last character in self.text.
-        """
+        """End Of Text: integer position of the last character in self.text."""
         return len(self.text) + 1
 
     def _keep(self, start, line_count) -> None:
-        """Keep the lines in the range of [start, start+line_count].
-        """
+        """Keep the lines in the range of [start, start+line_count]."""
         self._trim_lines(0, start)
         off = 0 if start == 0 else 1
         self._trim_lines(line_count + off, len(self.text.splitlines()))
 
     def _trim_lines(self, from_line: int, to_line: int) -> None:
-        """Removes the lines from self.text in the range of [from_line, to_line]
-        """
+        """Removes the lines from self.text in the range of [from_line, to_line]"""
         if from_line == to_line:
             return
         extents = self._line_extents
@@ -153,7 +155,7 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
                     p = self.text.index(token.string, p)
                     e = p + len(token.string)
                 except ValueError:
-                    print("F", p, token.string, repr(token))
+                    print("F", "pos", p, "str", token.string, repr(token))
                     continue
 
             self.set_style(p, e, style_book[token.category])
@@ -161,20 +163,17 @@ class PythonDocument(pyglet.text.document.FormattedDocument):
 
     @property
     def background_color(self) -> tuple:
-        """Convenience accessor for self.style_book['DEFAULT']['background_color'].
-        """
+        """Convenience accessor for self.style_book['DEFAULT']['background_color']."""
         return self.style_book["DEFAULT"]["background_color"]
 
     @property
     def color(self) -> tuple:
-        """Convenience accessor for self.style_book['DEFAULT']['color'].
-        """
+        """Convenience accessor for self.style_book['DEFAULT']['color']."""
         return self.style_book["DEFAULT"]["color"]
 
     @property
     def dimensions(self) -> tuple:
-        """A 2-tuple of width and height expressed in pixels.
-        """
+        """A 2-tuple of width and height expressed in pixels."""
 
         lines = self.text.splitlines()
         maxc = max(len(l) for l in lines)
