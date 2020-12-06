@@ -4,20 +4,19 @@
 
 import importlib.resources
 import yaml
+
 from pathlib import Path
+from webcolors import name_to_rgb, hex_to_rgb
 
 from . import resources
-from .color import Color
 
 
 class StyleBook(dict):
-    """
-    """
+    """"""
 
     @classmethod
     def available_styles(cls) -> list:
-        """Return a list of available style books by name.
-        """
+        """Return a list of available style books by name."""
         styles = []
         for filename in importlib.resources.contents(resources):
             path = Path(filename)
@@ -55,7 +54,7 @@ class StyleBook(dict):
         """Return a StyleBook initialized with the contents of the
         resource file identified by 'style_name'.
 
-        :param str style_name: 
+        :param str style_name:
         """
         with importlib.resources.path(resources, f"{style_name}_style.yaml") as path:
             return cls.from_filename(path)
@@ -82,8 +81,7 @@ class StyleBook(dict):
         self.validate()
 
     def validate(self) -> bool:
-        """
-        """
+        """"""
         if "DEFAULT" not in self:
             raise ValueError("Missing DEFAULT style.")
 
@@ -91,38 +89,39 @@ class StyleBook(dict):
             for color_key in ["color", "background_color", "underline"]:
                 try:
                     color_spec = attributes[color_key]
-                    color = Color.from_any(color_spec)
-                    attributes[color_key] = color.rgba
+
+                    try:
+                        color = hex_to_rgb(color_spec)
+                    except ValueError:
+                        color = name_to_rgb(color_spec)
+
+                    attributes[color_key] = (color.red, color.blue, color.green, 255)
                 except KeyError:
                     pass
+
                 except ValueError as error:
                     raise error from None
 
         return True
 
     def get(self, key: str) -> dict:
-        """Returns a dictionary for the given key.
-        """
+        """Returns a dictionary for the given key."""
         return super().get(key, {})
 
     def __str__(self):
-        """YAML formatted string.
-        """
+        """YAML formatted string."""
         return yaml.safe_dump(dict(self), sort_keys=False)
 
     def save(self, path):
-        """Save the contents of this StyleBook to path in YAML format.
-        """
+        """Save the contents of this StyleBook to path in YAML format."""
         yaml.safe_dump(dict(self), open(path, "w"), sort_keys=False)
 
     @property
     def default(self):
-        """Returns the DEFAULT style category dictionary.
-        """
+        """Returns the DEFAULT style category dictionary."""
         return self.get("DEFAULT")
 
     @property
     def categories(self):
-        """List of style category names.
-        """
+        """List of style category names."""
         return list(self.keys())
