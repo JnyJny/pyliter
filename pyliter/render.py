@@ -3,7 +3,6 @@
 
 import pyglet
 from .document import PythonDocument
-from .color import Color
 
 
 class PythonRender(pyglet.window.Window):
@@ -15,7 +14,7 @@ class PythonRender(pyglet.window.Window):
         style_book: dict = None,
         preview: bool = False,
         transparent: bool = False,
-        number_lines: bool = False,
+        do_number_lines: bool = False,
     ):
         """Render syntax-highlighted Python code to a window using
         the supplied style_book.
@@ -31,7 +30,13 @@ class PythonRender(pyglet.window.Window):
         self.preview = preview
 
         self.document = PythonDocument(
-            fileobj, start_line, line_count, style_book, number_lines
+            fileobj,
+            start_line,
+            line_count,
+            style_book,
+            do_number_lines,
+            debug=False,
+            transparent=transparent,
         )
 
         width, height = self.document.dimensions
@@ -54,13 +59,11 @@ class PythonRender(pyglet.window.Window):
             caption=caption,
         )
 
-        bg = Color(*self.document.background_color)
-        if transparent:
-            bg.alpha.value = 0
+        rbga_f = [c / 255.0 for c in self.document.background_color]
 
         pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
         pyglet.gl.glBlendFunc(pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
-        pyglet.gl.glClearColor(*bg.rgba_f)
+        pyglet.gl.glClearColor(*rbga_f)
 
         vwidth, vheight = self.get_viewport_size()
         if (self.width, self.height) != (vwidth, vheight):
@@ -71,13 +74,11 @@ class PythonRender(pyglet.window.Window):
 
     @property
     def margin(self):
-        """Integer pixels between edges and the text.
-        """
+        """Integer pixels between edges and the text."""
         return self.document.font.height
 
     def on_draw(self):
-        """Clear the window and draw it's contents.
-        """
+        """Clear the window and draw it's contents."""
         self.clear()
         self.layout.draw()
 
