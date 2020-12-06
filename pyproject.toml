@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyliter"
-version = "1.3.1"
+version = "1.4.0"
 description = "Generate color syntax highlighted PNG image from python source files."
 readme = "README.rst"
 authors = ["jnyjny <erik.oshaughnessy@gmail.com>"]
