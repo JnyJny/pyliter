@@ -30,31 +30,44 @@ Usage
 -----
 
 ::
-
    $ pyliter --help
-   Usage: pyliter [OPTIONS] [INPUT_FILE]
+   Usage: pyliter [OPTIONS] COMMAND [ARGS]...
+
+   Python syntax highlighting
+
+   Options:
+     --install-completion  Install completion for the current shell.
+     --show-completion     Show completion for the current shell, to copy it or
+                           customize the installation.
    
-     Python syntax highlighting
+     --help                Show this message and exit.
    
-     Renders syntax-highlighted text to PNG file and optional previews the
-     render in a window before saving.
-   
-     If the optional output path is omitted, preview is enabled.
+   Commands:
+     list    List builtin text styles.
+     render  Renders syntax-highlighted text to PNG file or displayed in a...
+
+   $ pyliter render --help
+   Usage: pyliter render [OPTIONS] INPUT_FILE
+
+   Renders syntax-highlighted text to PNG file or displayed in a window.
+
+   If the optional output path is omitted, preview is enabled automatically.
+
+   Arguments:
+     INPUT_FILE  [required]
    
    Options:
-     -o, --output-file PATH    Creates a PNG with the supplied path.
-     -l, --start-line INTEGER  Line number to begin display.  [default: 0]
-     -n, --line-count INTEGER  Number of lines to display.  [default: 10]
-     -N, --no-line-numbers     Disable line numbers in output.  [default: False]
-     -p, --preview             Previews output in window.  [default: False]
-     -t, --transparent         Write output PNG with transparency.  [default:
-                               False]
-     -s, --style-name TEXT     Style to apply to input file.  [default: default]
-     -f, --font-name TEXT      Font name.  [default: courier]
-     -S, --font-size INTEGER   Font size  [default: 24]
-     -L, --list-styles         List available styles and exits.
-     --version                 Show the version and exit.
+     -o, --output PATH
+     -s, --start-line INTEGER  [default: 0]
+     -L, --line-count INTEGER  [default: 10]
+     -N, --no-line-numbers     [default: False]
+     -p, --preview             [default: False]
+     -t, --transparent         [default: False]
+     --style-name TEXT         [default: default]
+     --font-name TEXT          [default: courier]
+     --font-size INTEGER       [default: 24]
      --help                    Show this message and exit.
+   
 
 
 Example
