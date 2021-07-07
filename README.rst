@@ -30,11 +30,12 @@ Usage
 -----
 
 ::
+
    $ pyliter --help
    Usage: pyliter [OPTIONS] COMMAND [ARGS]...
-
+   
    Python syntax highlighting
-
+   
    Options:
      --install-completion  Install completion for the current shell.
      --show-completion     Show completion for the current shell, to copy it or
@@ -46,13 +47,15 @@ Usage
      list    List builtin text styles.
      render  Renders syntax-highlighted text to PNG file or displayed in a...
 
+::
+
    $ pyliter render --help
    Usage: pyliter render [OPTIONS] INPUT_FILE
-
+   
    Renders syntax-highlighted text to PNG file or displayed in a window.
-
+   
    If the optional output path is omitted, preview is enabled automatically.
-
+   
    Arguments:
      INPUT_FILE  [required]
    
@@ -67,8 +70,6 @@ Usage
      --font-name TEXT          [default: courier]
      --font-size INTEGER       [default: 24]
      --help                    Show this message and exit.
-   
-
 
 Example
 -------
